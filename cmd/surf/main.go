@@ -94,6 +94,14 @@ func main() {
 	cli.Root.PersistentFlags().Bool("json", false, "Output result as JSON (alias for -o json)")
 	cli.Root.PersistentFlags().Bool("debug", false, "Enable debug log output")
 	cli.Root.PersistentFlags().Bool("quiet", false, "Suppress non-error diagnostic output")
+	cli.Root.PersistentFlags().String("agent-view", "", "Output an agent-friendly response view")
+	cli.Root.PersistentFlags().Bool("shape", false, "Output response shape summary as JSON")
+	if f := cli.Root.PersistentFlags().Lookup("agent-view"); f != nil {
+		f.Hidden = true
+	}
+	if f := cli.Root.PersistentFlags().Lookup("shape"); f != nil {
+		f.Hidden = true
+	}
 
 	// Add -v as shorthand for --version. Cobra auto-registers --version
 	// (from Root.Version) but without a short flag.
@@ -111,6 +119,16 @@ func main() {
 			origPreRun(cmd, args)
 		}
 		if j, err := cmd.Flags().GetBool("json"); err == nil && j {
+			viper.Set("rsh-output-format", "json")
+		}
+		if view, err := cmd.Flags().GetString("agent-view"); err == nil && view != "" {
+			viper.Set("rsh-agent-view", view)
+			if viper.GetString("rsh-output-format") == "auto" {
+				viper.Set("rsh-output-format", "json")
+			}
+		}
+		if shape, err := cmd.Flags().GetBool("shape"); err == nil && shape {
+			viper.Set("rsh-shape", true)
 			viper.Set("rsh-output-format", "json")
 		}
 		if d, err := cmd.Flags().GetBool("debug"); err == nil && d {
