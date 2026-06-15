@@ -37,6 +37,28 @@ func TestTransformResponseForCommandAddsOnchainTxDecimalFields(t *testing.T) {
 	assert.Equal(t, "1", tx["valueNativeDecimal"])
 }
 
+func TestTransformResponseForCommandAddsQ188BlockDecimal(t *testing.T) {
+	reset(false)
+
+	body := map[string]any{
+		"data": []any{
+			map[string]any{
+				"blockNumber": "0x1630d13",
+				"value":       "0x0",
+			},
+		},
+	}
+
+	transformed, err := transformResponseForCommand("onchain-tx", body)
+	require.NoError(t, err)
+	got := transformed.(map[string]any)
+	tx := got["data"].([]any)[0].(map[string]any)
+
+	assert.Equal(t, "23268627", tx["blockNumberDecimal"])
+	assert.Equal(t, "0", tx["valueDecimal"])
+	assert.Equal(t, "0", tx["valueNativeDecimal"])
+}
+
 func TestTransformResponseForCommandHandlesFractionalNativeValue(t *testing.T) {
 	reset(false)
 
